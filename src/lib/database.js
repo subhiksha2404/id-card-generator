@@ -84,5 +84,76 @@ export const db = {
 
         if (error) throw error;
         return data;
+    },
+
+    // Update existing card
+    async updateCard(id, cardData, photoFile, signatureFile) {
+        const user = (await supabase.auth.getUser()).data.user;
+        if (!user) throw new Error('User not authenticated');
+
+        const updates = {
+            full_name: cardData.fullName,
+            dob: cardData.dob,
+            phone_number: cardData.phoneNumber,
+            email: cardData.email,
+            organization_name: cardData.organizationName,
+        };
+
+        // 1. Upload new photo if provided
+        if (photoFile) {
+            const fileExt = photoFile.name.split('.').pop();
+            const fileName = `${user.id}/${uuidv4()}.${fileExt}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('id-card-photos')
+                .upload(fileName, photoFile);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('id-card-photos')
+                .getPublicUrl(fileName);
+
+            updates.photo_url = publicUrl;
+        }
+
+        // 2. Upload new signature if provided
+        if (signatureFile) {
+            const sigExt = signatureFile.name.split('.').pop();
+            const sigName = `${user.id}/${uuidv4()}_sig.${sigExt}`;
+
+            const { error: sigUploadError } = await supabase.storage
+                .from('id-card-photos')
+                .upload(sigName, signatureFile);
+
+            if (sigUploadError) throw sigUploadError;
+
+            const { data: { publicUrl: sigPublicUrl } } = supabase.storage
+                .from('id-card-photos')
+                .getPublicUrl(sigName);
+
+            updates.signature_url = sigPublicUrl;
+        }
+
+        const { data, error } = await supabase
+            .from('id_cards')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
+
+    // Delete card
+    async deleteCard(id) {
+        const { error } = await supabase
+            .from('id_cards')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+        return true;
     }
 };

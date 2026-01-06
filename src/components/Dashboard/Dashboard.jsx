@@ -29,6 +29,17 @@ export default function Dashboard() {
         await supabase.auth.signOut();
     };
 
+    const handleDelete = async (id) => {
+        if (window.confirm('Are you sure you want to delete this ID card? This action cannot be undone.')) {
+            try {
+                await db.deleteCard(id);
+                setCards(cards.filter(card => card.id !== id));
+            } catch (err) {
+                alert('Failed to delete card: ' + err.message);
+            }
+        }
+    };
+
     return (
         <div className="min-h-screen bg-slate-50">
             {/* Header */}
@@ -100,6 +111,22 @@ export default function Dashboard() {
                             <div key={card.id} className="group relative">
                                 <div className="transform transition-transform group-hover:-translate-y-1">
                                     <IDCardPreview data={card} />
+                                </div>
+
+                                {/* Action Buttons Overlay */}
+                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center gap-3 backdrop-blur-[2px]">
+                                    <Link
+                                        to={`/edit/${card.id}`}
+                                        className="bg-white hover:bg-slate-100 text-slate-900 px-4 py-2 rounded-lg font-medium text-sm transition-colors shadow-lg"
+                                    >
+                                        Edit
+                                    </Link>
+                                    <button
+                                        onClick={() => handleDelete(card.id)}
+                                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors shadow-lg"
+                                    >
+                                        Delete
+                                    </button>
                                 </div>
                             </div>
                         ))}

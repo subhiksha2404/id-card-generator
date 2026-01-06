@@ -6,7 +6,9 @@ import { Loader2 } from 'lucide-react';
 import LoginPage from './components/Auth/LoginPage';
 import SignupPage from './components/Auth/SignupPage';
 import Dashboard from './components/Dashboard/Dashboard';
+import Dashboard from './components/Dashboard/Dashboard';
 import CreateCardPage from './components/CreateCard/CreateCardPage';
+import EditCardPage from './components/CreateCard/EditCardPage';
 
 function App() {
     const [session, setSession] = useState(null);
@@ -53,6 +55,10 @@ function App() {
                 <Route
                     path="/create"
                     element={session ? <CreateCardPage /> : <Navigate to="/login" replace />}
+                />
+                <Route
+                    path="/edit/:id"
+                    element={session ? <EditCardPage /> : <Navigate to="/login" replace />}
                 />
             </Routes>
         </Router>
