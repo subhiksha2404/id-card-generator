@@ -14,10 +14,13 @@ export default function CreateCardPage() {
         dob: '',
         phoneNumber: '',
         email: '',
+        organizationName: '',
     });
 
     const [photoFile, setPhotoFile] = useState(null);
     const [photoPreview, setPhotoPreview] = useState(null);
+    const [signatureFile, setSignatureFile] = useState(null);
+    const [signaturePreview, setSignaturePreview] = useState(null);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -37,6 +40,19 @@ export default function CreateCardPage() {
         }
     };
 
+    const handleSignatureChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 2 * 1024 * 1024) { // 2MB limit
+                alert('File size must be less than 2MB');
+                return;
+            }
+            setSignatureFile(file);
+            const objectUrl = URL.createObjectURL(file);
+            setSignaturePreview(objectUrl);
+        }
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -49,7 +65,7 @@ export default function CreateCardPage() {
         }
 
         try {
-            await db.createCard(formData, photoFile);
+            await db.createCard(formData, photoFile, signatureFile);
             navigate('/');
         } catch (err) {
             console.error(err);
@@ -66,7 +82,9 @@ export default function CreateCardPage() {
         phone_number: formData.phoneNumber,
         email: formData.email,
         photo_url: photoPreview,
-        id_number: 'ID-PREVIEW-001'
+        id_number: 'ID-PREVIEW-001',
+        organization_name: formData.organizationName,
+        signature_url: signaturePreview
     };
 
     return (
@@ -118,6 +136,45 @@ export default function CreateCardPage() {
                                 </div>
 
                                 <div className="grid grid-cols-1 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">Company/Institution Name</label>
+                                        <input
+                                            type="text"
+                                            name="organizationName"
+                                            value={formData.organizationName}
+                                            onChange={handleInputChange}
+                                            className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                            placeholder="e.g. Gemini Corp"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">Authorized Signature (Image)</label>
+                                        <div className="mt-1 flex items-center gap-4">
+                                            <div className="flex-1">
+                                                <label className="flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-lg hover:bg-slate-50 transition-colors cursor-pointer relative">
+                                                    <div className="space-y-1 text-center">
+                                                        <div className="flex text-sm text-slate-600 justify-center">
+                                                            <span className="font-medium text-blue-600 hover:text-blue-500">Upload Signature</span>
+                                                            <input
+                                                                type="file"
+                                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                                accept="image/*"
+                                                                onChange={handleSignatureChange}
+                                                            />
+                                                        </div>
+                                                        <p className="text-xs text-slate-500">PNG (Transparent recommended)</p>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                            {signaturePreview && (
+                                                <div className="h-20 w-32 border border-slate-200 rounded-lg p-2 bg-white flex items-center justify-center">
+                                                    <img src={signaturePreview} alt="Sig Preview" className="max-h-full max-w-full object-contain" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
                                     <div>
                                         <label className="block text-sm font-medium text-slate-700 mb-2">Full Name</label>
                                         <input

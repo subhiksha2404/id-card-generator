@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const db = {
     // Create a new ID card
-    async createCard(cardData, photoFile) {
+    async createCard(cardData, photoFile, signatureFile) {
         const user = (await supabase.auth.getUser()).data.user;
         if (!user) throw new Error('User not authenticated');
 
@@ -21,7 +21,26 @@ export const db = {
             .from('id-card-photos')
             .getPublicUrl(fileName);
 
-        // 2. Insert record
+        // 2. Upload signature if exists
+        let signatureUrl = null;
+        if (signatureFile) {
+            const sigExt = signatureFile.name.split('.').pop();
+            const sigName = `${user.id}/${uuidv4()}_sig.${sigExt}`;
+
+            const { error: sigUploadError } = await supabase.storage
+                .from('id-card-photos')
+                .upload(sigName, signatureFile);
+
+            if (sigUploadError) throw sigUploadError;
+
+            const { data: { publicUrl: sigPublicUrl } } = supabase.storage
+                .from('id-card-photos')
+                .getPublicUrl(sigName);
+
+            signatureUrl = sigPublicUrl;
+        }
+
+        // 3. Insert record
         const { data, error } = await supabase
             .from('id_cards')
             .insert([
@@ -32,6 +51,8 @@ export const db = {
                     phone_number: cardData.phoneNumber,
                     email: cardData.email,
                     photo_url: publicUrl,
+                    organization_name: cardData.organizationName,
+                    signature_url: signatureUrl,
                     id_number: `ID-${Date.now().toString().slice(-8)}-${Math.floor(Math.random() * 1000)}`, // Simple unique ID gen
                 },
             ])

@@ -18,7 +18,7 @@ export default function IDCardPreview({ data, preview }) {
                 <div className="px-4 pt-4 pb-2 text-white flex justify-between items-start">
                     <div>
                         <h3 className="text-xs font-medium opacity-90 uppercase tracking-wider">Identity Card</h3>
-                        <div className="font-bold text-lg leading-tight mt-0.5">GEMINI CORP</div>
+                        <div className="font-bold text-lg leading-tight mt-0.5 uppercase">{data.organization_name || 'Organization Name'}</div>
                     </div>
                     {/* Logo placeholder or chip */}
                     <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
@@ -80,9 +80,14 @@ export default function IDCardPreview({ data, preview }) {
                 </div>
 
                 {/* Footer */}
-                <div className="bg-slate-50 px-4 py-2 border-t border-slate-100 flex justify-between items-center text-[9px] text-slate-400">
-                    <span>Issue Date: {format(new Date(), 'MMM dd, yyyy')}</span>
-                    <span>Authorized Signature</span>
+                <div className="bg-slate-50 px-4 py-2 border-t border-slate-100 flex justify-between items-end text-[9px] text-slate-400 min-h-[40px]">
+                    <span className="mb-1">Issue Date: {format(new Date(), 'MMM dd, yyyy')}</span>
+                    <div className="flex flex-col items-center">
+                        {data.signature_url && (
+                            <img src={data.signature_url} alt="Signature" className="h-8 object-contain mb-1" />
+                        )}
+                        <span>Authorized Signature</span>
+                    </div>
                 </div>
             </div>
         </div>
