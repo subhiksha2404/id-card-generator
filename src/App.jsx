@@ -6,7 +6,6 @@ import { Loader2 } from 'lucide-react';
 import LoginPage from './components/Auth/LoginPage';
 import SignupPage from './components/Auth/SignupPage';
 import Dashboard from './components/Dashboard/Dashboard';
-import Dashboard from './components/Dashboard/Dashboard';
 import CreateCardPage from './components/CreateCard/CreateCardPage';
 import EditCardPage from './components/CreateCard/EditCardPage';
 
